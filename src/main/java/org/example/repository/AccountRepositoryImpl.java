@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
 
 public class AccountRepositoryImpl implements AccountRepository {
 //singleton
-    // Attribut static : partagé par toute la classe.
+    // 1. Attribut static : partagé par toute la classe.
     // final : sa référence ne pourra pas être modifiée après son initialisation.
     private static final AccountRepositoryImpl accountrepository;
-    // Bloc d'initialisation statique : exécuté une seule fois lors du chargement de la classe.
+    // 2. Bloc d'initialisation statique : exécuté une seule fois lors du chargement de la classe.
 
     //on peut ne pas faire ce block static et on verifie dans function getinstance,  si il et null on creér l'instance
     // on peut mem soit dans ce blok ou dans getinstnce selon la methode choisit pour instncier faire des traitemnts lors de la creration de l'instance
@@ -28,24 +28,44 @@ public class AccountRepositoryImpl implements AccountRepository {
         System.out.println("initialisation de singleton");
         accountrepository = new AccountRepositoryImpl();
     }
-    // Constructeur privé : interdit la création dans une autre classe , mais juste en interne de la classe
+    // 3. Constructeur privé : interdit la création dans une autre classe , mais juste en interne de la classe
     private AccountRepositoryImpl() {
     }
-    public static AccountRepositoryImpl getInsance(){
+    //4. getinstnace public
+    public /*synchronized*/ static AccountRepositoryImpl getInsance(){
+        /*
+        if (accountrepository == null) {
+            accountrepository = new AccountRepositoryImpl();
+        }
+
+        !!!! si on utilsecette methode , la methode doit etre sinchronized (eviter que deux thread lire null au meme temps et créer deux instances )
+        */
         return accountrepository;
     }
 
-  //
+//
 
     private Map<Long, BanckAccount> banckAccountMap = new HashMap<>();
-    private long accountid = 0;
+    private long accountcount = 0;
 
     @Override
-    public BanckAccount save(BanckAccount bankAccount) {
+    public /*synchronized*/ BanckAccount save(BanckAccount bankAccount) {
 
-        bankAccount.setAccountId(++accountid);
+        Long accountId ;
 
-        banckAccountMap.put(bankAccount.getAccountId(), bankAccount);
+        synchronized (this){//Pour entrer dans ce bloc, un thread doit obtenir le verrou de l'objet courant (this).
+            accountId=++accountcount;//critical zone
+       }
+       //on peut simplement synchronizer toute la methode
+
+        bankAccount.setAccountId(accountId);
+
+        // bankAccountMap est une HashMap partagée entre les threads.
+        // Plusieurs threads ne doivent pas modifier cette HashMap simultanément,et  HashMap n'est pas thread-safe , Cela peut provoquer des incohérences dans size qi s'incremente dans put
+        synchronized (this){
+            banckAccountMap.put(bankAccount.getAccountId(), bankAccount);//critical zone
+        }
+
 
         return bankAccount;
     }
@@ -88,9 +108,11 @@ public class AccountRepositoryImpl implements AccountRepository {
         banckAccountMap.remove(id);
     }
 
-    public  void populateData(){
+
+    public  /*synchronized */ void populateData(){
         for (int i = 0; i <10 ; i++) {
             BanckAccount account = BanckDirector.accountbuilder()
+                    //on ne donne pas l'id car methode save va l'incrémenter
                     .balance(10000+Math.random()*90000)
                     .type(Math.random()>0.5? AccountType.SAVING_ACCOUNT:AccountType.CURRENT_ACCOUNT)
                     .status(Math.random()>0.5? AccountStatus.CREATED:AccountStatus.ACTIVATED)
@@ -98,6 +120,12 @@ public class AccountRepositoryImpl implements AccountRepository {
                     .build();
 
             save(account);}
+        //apres boucle
+        System.out.println("=======================================");
+        System.out.println(Thread.currentThread().getName());
+        System.out.println("Account Count = " +accountcount);
+        System.out.println("Size = " +banckAccountMap.values().size());
+        System.out.println("=======================================");
 
 
     }
