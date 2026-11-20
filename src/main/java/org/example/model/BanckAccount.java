@@ -1,5 +1,5 @@
 package org.example.model;
-public class BanckAccount {
+public class BanckAccount implements Cloneable{
 
         private Long accountId;
         private double balance;
@@ -72,6 +72,7 @@ public class BanckAccount {
                         ", currency='" + currency + '\'' +
                         ", type=" + type +
                         ", status=" + status +
+                        ",customer" + customer +
                         '}';
         }
 
@@ -82,6 +83,9 @@ public class BanckAccount {
 
 
 
+//Builder
+
+//une methode builder est deplacé a la classe director pour centralisation des builders
 
         public static class BanckAccountBuilder{
              private BanckAccount banckAccount = new BanckAccount();
@@ -119,7 +123,27 @@ public class BanckAccount {
                 }
 
         }
+//prototye
 
+        //ici la classe customer doit implemnter  clonable et doit redefinir clone, ainsi on ajoute dans clone de banckaccount  " banckAccount.setCustomer(this.customer.clone());"
 
+        private Customer customer;
 
+        // Getter
+        public Customer getCustomer() {
+                return customer;
+        }
+
+        // Setter
+        public void setCustomer(Customer customer) {
+                this.customer = customer;
+        }
+
+      // il faut redefinir cett methode
+        @Override
+        public BanckAccount clone() throws CloneNotSupportedException {
+                BanckAccount banckAccount = (BanckAccount) super.clone();
+                banckAccount.setCustomer(this.customer.clone());
+                return banckAccount;
+        }
 }
