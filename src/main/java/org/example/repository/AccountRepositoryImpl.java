@@ -16,6 +16,26 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class AccountRepositoryImpl implements AccountRepository {
+//singleton
+    // Attribut static : partagé par toute la classe.
+    // final : sa référence ne pourra pas être modifiée après son initialisation.
+    private static final AccountRepositoryImpl accountrepository;
+    // Bloc d'initialisation statique : exécuté une seule fois lors du chargement de la classe.
+
+    //on peut ne pas faire ce block static et on verifie dans function getinstance,  si il et null on creér l'instance
+    // on peut mem soit dans ce blok ou dans getinstnce selon la methode choisit pour instncier faire des traitemnts lors de la creration de l'instance
+    static {
+        System.out.println("initialisation de singleton");
+        accountrepository = new AccountRepositoryImpl();
+    }
+    // Constructeur privé : interdit la création dans une autre classe , mais juste en interne de la classe
+    private AccountRepositoryImpl() {
+    }
+    public static AccountRepositoryImpl getInsance(){
+        return accountrepository;
+    }
+
+  //
 
     private Map<Long, BanckAccount> banckAccountMap = new HashMap<>();
     private long accountid = 0;
