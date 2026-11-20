@@ -16,7 +16,7 @@ Le pattern **Builder** est un design pattern de création qui permet de construi
 ![Console Builder](img.png)
 
 ### seliarisation en Json
-![img_1.png](img_1.png)
+
 
 ![img_2.png](img_2.png)
 
@@ -85,8 +85,6 @@ Dans la méthode `save`, l'incrémentation `accountId = ++accountcount;` n'est p
 ### Problème de  clonage
 
 `BankAccount` contient un autre objet `Customer`, la méthode `clone()` par défaut ne clone que l'enveloppe. Elle copie la **référence mémoire** de `Customer`.
-
-**Résultat :** modifier le `Customer` du clone modifie aussi celui de l'original !
 
 ![Schéma Shallow Copy](img_18.png)
 
